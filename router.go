@@ -6,24 +6,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Route defines elements needed to describe a route
 type Route struct {
-	Name        string
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
 
+// Route is a collection of Route items
 type Routes []Route
 
 var routes = Routes{
 	Route{
-		"Search",
 		"GET",
 		"/movie/amazon/{amazon_id}",
 		GetMovie,
 	},
 }
 
+// NewRouter creates a new router and registers all routes
+// and handlers responsible for processing each of the routes
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
@@ -33,7 +35,6 @@ func NewRouter() *mux.Router {
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
-			Name(route.Name).
 			Handler(handler)
 	}
 

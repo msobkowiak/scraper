@@ -14,12 +14,35 @@ import (
 
 const baseUrl = "http://www.amazon.de/gp/product/"
 
+// Movie defines the fields included in api response
 type Movie struct {
 	Title       string   `json:"title"`
 	ReleaseYear int      `json:"release_year"`
 	Actors      []string `json:"actors"`
 	Poster      string   `json:"poster"`
 	SimilarIds  []string `json:"similar_ids"`
+}
+
+// GetMovie handles the request. Crawls amazon prime page for the movie specified
+// by the amazon_id, finds information about the movie and return it in the response.
+func GetMovie(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	aid := params["amazon_id"]
+
+	respCode := http.StatusOK
+	resp, err := http.Get(baseUrl + aid)
+	if err != nil {
+		respCode = http.StatusBadRequest
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+
+	m, err := parseDom(resp.Body)
+	if err != nil {
+		respCode = http.StatusInternalServerError
+	}
+
+	writeResponse(m, respCode, w)
 }
 
 func parseDom(httpBody io.Reader) (Movie, error) {
@@ -66,23 +89,10 @@ func parseDom(httpBody io.Reader) (Movie, error) {
 	return m, nil
 }
 
-func GetMovie(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	aid := params["amazon_id"]
-
-	resp, err := http.Get(baseUrl + aid)
-	if err != nil {
-		log.Println(err)
-	}
-	defer resp.Body.Close()
-
-	m, err := parseDom(resp.Body)
-	respCode := 200
-	if err != nil {
-		respCode = 500
-	}
-
+func writeResponse(data interface{}, respCode int, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(respCode)
-	json.NewEncoder(w).Encode(&m)
+	if respCode == http.StatusOK {
+		json.NewEncoder(w).Encode(&data)
+	}
 }
