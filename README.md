@@ -21,3 +21,9 @@ go build
 # run the application
 ./scraper
 ```
+
+# Example of use
+```
+# get information about a movie with amazon id B00GSCPW4I
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:8080/movie/amazon/B00GSCPW4I
+```
