@@ -19,5 +19,5 @@ Amazon movies scraper is a service that makes a background request, fetching the
 go build 
 
 # run the application
-./screper
+./scraper
 ```
